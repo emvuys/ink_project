@@ -44,6 +44,9 @@ export interface DeliveryData {
 export interface ProofRecord {
   proof_id: string;
   order_id: string;
+  nfc_uid?: string;
+  merchant?: string;
+  order_url?: string | null;
   enrollment: EnrollmentData;
   delivery: DeliveryData | null;
   signature: string;

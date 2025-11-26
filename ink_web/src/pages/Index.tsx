@@ -19,6 +19,7 @@ const Index = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [phoneError, setPhoneError] = useState<string>('');
   const [isPhoneLoading, setIsPhoneLoading] = useState(false);
+  const [locationRequested, setLocationRequested] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -26,11 +27,13 @@ const Index = () => {
       return;
     }
 
-    startVerification();
+    // Request location permission when page loads
+    requestLocation();
   }, [token]);
 
-  const startVerification = async () => {
+  const requestLocation = async () => {
     setState('loading');
+    setLocationRequested(true);
 
     const geoResult = await getCurrentPosition();
     
@@ -39,19 +42,32 @@ const Index = () => {
       return;
     }
 
+    // Location obtained, proceed with verification
+    await startVerification(geoResult.coordinates);
+  };
+
+  const startVerification = async (coordinates?: { lat: number; lng: number }) => {
+    setState('loading');
+
+    // If coordinates not provided, try to get them
+    let deliveryGps = coordinates;
+    if (!deliveryGps) {
+      const geoResult = await getCurrentPosition();
+      if (!geoResult.success || !geoResult.coordinates) {
+        setState('phone');
+        return;
+      }
+      deliveryGps = geoResult.coordinates;
+    }
+
     try {
       const response = await verifyDelivery({
         nfc_token: token!,
-        delivery_gps: geoResult.coordinates,
+        delivery_gps: deliveryGps,
         device_info: getDeviceInfo(),
       });
 
-      // If already verified, redirect to record page
-      if (response.already_verified && response.proof_id) {
-        navigate(`/verify/${response.proof_id}`);
-        return;
-      }
-
+      // Always show success page first, whether newly verified or already verified
       setVerifyResult(response);
       setState('success');
     } catch (error) {
@@ -85,25 +101,24 @@ const Index = () => {
         phone_last4: phone,
       });
 
-      // If already verified, redirect to record page
-      if (response.already_verified && response.proof_id) {
-        navigate(`/verify/${response.proof_id}`);
-        return;
-      }
-
+      // Always show success page first
       setVerifyResult(response);
       setState('success');
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 403) {
-          setPhoneError('Phone number does not match');
+          // Phone verification failed - show error page
+          setErrorMessage("Your location or phone number didn't match");
+          setState('failed');
         } else if (error.status === 404) {
           setState('invalid');
         } else {
-          setPhoneError(error.data?.error || 'Verification failed');
+          setErrorMessage(error.data?.error || 'Verification failed');
+          setState('failed');
         }
       } else {
-        setPhoneError('Network error');
+        setErrorMessage('Network error. Please check your connection.');
+        setState('failed');
       }
     } finally {
       setIsPhoneLoading(false);
@@ -113,7 +128,7 @@ const Index = () => {
   const renderState = () => {
     switch (state) {
       case 'loading':
-        return <LoadingState />;
+        return <LoadingState onRequestLocation={requestLocation} />;
       case 'success':
         return (
           <SuccessState 

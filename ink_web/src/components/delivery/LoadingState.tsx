@@ -1,6 +1,10 @@
 import PrivacyLink from "@/components/PrivacyLink";
 
-const LoadingState = () => {
+interface LoadingStateProps {
+  onRequestLocation?: () => void;
+}
+
+const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
   return (
     <div className="min-h-screen bg-ink-white flex flex-col items-center justify-center px-6 animate-container-fade-in">
       {/* INK Wordmark */}

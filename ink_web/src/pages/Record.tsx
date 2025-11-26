@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PrivacyLink from "@/components/PrivacyLink";
+import { Skeleton } from "@/components/ui/skeleton";
 import { retrieveProof } from "@/lib/api";
+import { reverseGeocode } from "@/lib/geocoding";
 import type { ProofRecord } from "@/lib/types";
 
 const Record = () => {
@@ -9,6 +11,8 @@ const Record = () => {
   const [proof, setProof] = useState<ProofRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [address, setAddress] = useState<string>('Loading address...');
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!proofId) {
@@ -24,6 +28,16 @@ const Record = () => {
     try {
       const data = await retrieveProof(proofId!);
       setProof(data);
+      
+      // Fetch address from GPS coordinates
+      const geocodeResult = await reverseGeocode(data.enrollment.shipping_address_gps);
+      if (geocodeResult.success && geocodeResult.address) {
+        setAddress(geocodeResult.address);
+      } else {
+        // Fallback to coordinates if geocoding fails
+        const { lat, lng } = data.enrollment.shipping_address_gps;
+        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      }
     } catch (err) {
       setError('Proof not found');
     } finally {
@@ -59,9 +73,15 @@ const Record = () => {
     }
   };
 
-  const shortenSignature = (sig: string) => {
-    if (sig.length <= 16) return sig;
-    return `${sig.slice(0, 8)}...${sig.slice(-8)}`;
+  const formatSignature = (sig: string) => {
+    if (!sig) return 'N/A';
+    // Format signature as 0x... with first 4 and last 4 characters
+    const cleanSig = sig.startsWith('0x') ? sig.slice(2) : sig;
+    if (cleanSig.length <= 8) {
+      return `0x${cleanSig}`;
+    }
+    // Show first 4 and last 4 characters: 0x7a8f...2e4c
+    return `0x${cleanSig.slice(0, 4)}...${cleanSig.slice(-4)}`;
   };
 
   if (loading) {
@@ -88,9 +108,9 @@ const Record = () => {
 
   return (
     <div className="min-h-screen bg-ink-white animate-container-fade-in">
-      <main className="flex flex-col items-center px-6 pt-[120px]">
-        <div className="text-center mb-8 animate-fade-up">
-          <h1 className="text-[30px] font-bold text-ink-black leading-[34px] tracking-[0] mb-[6px]">
+      <main className="flex flex-col items-center px-6 pt-[40px]">
+        <div className="text-center mb-4 animate-fade-up">
+          <h1 className="text-[30px] font-bold text-ink-black leading-[34px] tracking-[0] mb-1">
             Delivery Record
           </h1>
           <p className="text-[15px] text-[#666666] leading-[22px]">
@@ -99,100 +119,102 @@ const Record = () => {
         </div>
 
         <div 
-          className="w-full max-w-[320px] mb-8 animate-fade-in"
+          className="w-full max-w-[320px] mb-4 animate-fade-in"
           style={{
             animationDelay: "70ms",
             animationFillMode: "backwards",
           }}
         >
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <p className="text-[15px] text-ink-black leading-[22px]">
               <span className="font-bold">
                 {proof.delivery ? 'Delivered' : 'Enrolled'}
               </span> · {formatTimestamp(proof.enrollment.timestamp)}
             </p>
+            {proof.merchant && (
+              <p className="text-[15px] text-[#666666] leading-[22px]">
+                Merchant: {proof.merchant}
+              </p>
+            )}
             <p className="text-[15px] text-[#666666] leading-[22px]">
               Order: {proof.order_id}
             </p>
             <p className="text-[15px] text-[#666666] leading-[22px]">
-              Location: {getLocationString(proof.enrollment.shipping_address_gps)}
+              Location: {address}
             </p>
+            {proof.order_url && (
+              <a 
+                href={proof.order_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[15px] text-blue-600 underline leading-[22px] hover:text-blue-800"
+              >
+                View original order →
+              </a>
+            )}
           </div>
         </div>
 
-        <div className="w-full max-w-[300px] mb-8">
-          <div className="grid grid-cols-2 gap-[6px]">
+        <div className="w-full max-w-[300px] mb-4">
+          <div className="grid grid-cols-2 gap-1.5">
             {proof.enrollment.photo_urls.map((url, index) => (
               <div
                 key={index}
-                className="aspect-square overflow-hidden animate-fade-in"
+                className="aspect-square overflow-hidden relative animate-fade-in"
                 style={{
                   animationDelay: `${140 + index * 70}ms`,
                   animationFillMode: "backwards",
                 }}
               >
+                {!loadedImages.has(index) && (
+                  <Skeleton className="absolute inset-0 w-full h-full" />
+                )}
                 <img
                   src={url}
                   alt={`Delivery photo ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${
+                    loadedImages.has(index) ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  onLoad={() => {
+                    setLoadedImages(prev => new Set(prev).add(index));
+                  }}
+                  onError={() => {
+                    setLoadedImages(prev => new Set(prev).add(index));
+                  }}
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {proof.delivery && (
-          <div 
-            className="w-full max-w-[320px] mb-8 animate-fade-in"
-            style={{
-              animationDelay: "350ms",
-              animationFillMode: "backwards",
-            }}
-          >
-            <div className="space-y-2 border-t border-ink-gray/20 pt-6">
-              <p className="text-[15px] text-ink-black leading-[22px] font-medium">
-                Delivery Confirmed
-              </p>
-              <p className="text-[13px] text-[#666666] leading-[20px]">
-                {formatTimestamp(proof.delivery.timestamp)}
-              </p>
-              <p className="text-[13px] text-[#666666] leading-[20px]">
-                {getLocationString(proof.delivery.delivery_gps)}
-              </p>
-              <p className="text-[13px] text-[#666666] leading-[20px]">
-                {proof.delivery.device_info}
-              </p>
-            </div>
-          </div>
-        )}
 
         <div 
-          className="w-full max-w-[320px] mb-12 animate-fade-in"
+          className="w-full max-w-[320px] mb-4 animate-fade-in"
           style={{
-            animationDelay: "420ms",
+            animationDelay: "350ms",
             animationFillMode: "backwards",
           }}
         >
-          <div className="space-y-2 border-t border-ink-gray/20 pt-6">
+          <div className="space-y-1.5 border-t border-ink-gray/20 pt-3">
             {proof.delivery && (
-              <p className="text-[13px] text-ink-black leading-[20px] font-medium">
+              <p className="text-[13px] text-ink-black leading-[20px] font-medium mb-1">
                 {getVerdictLabel(proof.delivery.gps_verdict)}
               </p>
             )}
             <p className="text-[12px] text-[#666666] leading-[18px]">
-              Proof ID: {proof.proof_id}
-            </p>
-            <p className="text-[12px] text-[#666666] leading-[18px] font-mono">
-              Signature: {shortenSignature(proof.signature)}
+              NFC Tag ID: {proof.nfc_uid ? proof.nfc_uid.toUpperCase() : 'N/A'}
             </p>
             <p className="text-[12px] text-[#666666] leading-[18px]">
-              Key ID: {proof.key_id}
+              Proof ID: {proof.proof_id ? proof.proof_id.toUpperCase() : 'N/A'}
+            </p>
+            <p className="text-[12px] text-[#666666] leading-[18px]">
+              Signature: {formatSignature(proof.signature)}
             </p>
           </div>
         </div>
 
         <footer 
-          className="text-center mb-8 pb-4 animate-fade-in"
+          className="text-center mb-2 pb-2 animate-fade-in"
           style={{
             animationDelay: "470ms",
             animationFillMode: "backwards",

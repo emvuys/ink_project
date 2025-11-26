@@ -6,6 +6,18 @@
 All colors MUST be HSL.
 */
 
+/* Inkwell Font Face */
+@font-face {
+  font-family: 'Inkwell';
+  src: url('/font/Inkwell.woff2') format('woff2'),
+       url('/font/Inkwell.woff') format('woff'),
+       url('/font/Inkwell.otf') format('opentype'),
+       url('/font/Inkwell.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* INK Design System - Pure Monochrome */

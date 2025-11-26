@@ -27,6 +27,9 @@ router.get('/:proofId', async (req, res) => {
     res.json({
       proof_id: proofId,
       order_id: maskedOrderId,
+      nfc_uid: proof.nfc_uid || '',
+      merchant: proof.merchant || '',
+      order_url: proof.order_url || null, // Shopify order URL if available
       enrollment: {
         timestamp: enrollmentTimestamp,
         shipping_address_gps: proof.shipping_address_gps,
