@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write for authenticated requests only
+    // For production, implement proper authentication
+    match /proofs/{proofId} {
+      allow read: if true; // Public read for dispute page
+      allow write: if false; // Only server can write (via Admin SDK)
+    }
+    
+    // Health check collection
+    match /_health/{document=**} {
+      allow read, write: if false; // Only server can access
+    }
+  }
+}
+
