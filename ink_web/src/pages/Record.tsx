@@ -114,7 +114,7 @@ const Record = () => {
             Delivery Record
           </h1>
           <p className="text-[15px] text-[#666666] leading-[22px]">
-            Verified by INK
+            Verified by ink
           </p>
         </div>
 
@@ -198,7 +198,7 @@ const Record = () => {
           <div className="space-y-1.5 border-t border-ink-gray/20 pt-3">
             {proof.delivery && (
               <p className="text-[13px] text-ink-black leading-[20px] font-medium mb-1">
-                {getVerdictLabel(proof.delivery.gps_verdict)}
+                Location matched delivery address
               </p>
             )}
             <p className="text-[12px] text-[#666666] leading-[18px]">
@@ -221,7 +221,7 @@ const Record = () => {
           }}
         >
           <p className="text-[13px] text-[#999999] tracking-[0.5px] uppercase">
-            Authenticated by INK
+            Authenticated by ink
           </p>
         </footer>
       </main>

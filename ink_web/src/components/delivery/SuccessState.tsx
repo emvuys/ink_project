@@ -20,7 +20,7 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
             Delivered
           </h1>
           <p className="text-[15px] text-[#666666] leading-[22px]">
-            successfully authenticated
+            Successfully Authenticated
           </p>
         </div>
 
@@ -57,7 +57,7 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
           }}
         >
           <p className="text-[13px] text-[#999999] tracking-[0.5px] uppercase">
-            Authenticated by INK
+            Authenticated by ink
           </p>
         </footer>
       </main>

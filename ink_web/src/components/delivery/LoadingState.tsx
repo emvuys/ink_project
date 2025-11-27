@@ -10,14 +10,14 @@ const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
       {/* INK Wordmark */}
       <div className="absolute top-[120px] opacity-0">
         <h1 className="text-[24px] font-bold text-ink-black tracking-tight">
-          INK
+          ink
         </h1>
       </div>
 
       {/* Main Content - Centered */}
       <div className="flex flex-col items-center">
         <p className="text-[16px] text-ink-black mb-4">
-          Verifying delivery...
+          Verify Delivery
         </p>
         
         {/* Pulsing Line */}
