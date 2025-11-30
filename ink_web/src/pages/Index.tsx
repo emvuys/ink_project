@@ -38,7 +38,9 @@ const Index = () => {
     const geoResult = await getCurrentPosition();
     
     if (!geoResult.success || !geoResult.coordinates) {
-      setState('phone');
+      // GPS denied or failed - show error page
+      setErrorMessage('Location access is required to verify delivery');
+      setState('failed');
       return;
     }
 
