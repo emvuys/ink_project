@@ -17,10 +17,10 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
         {/* Success Title */}
         <div className="text-center mb-8 animate-fade-up">
           <h1 className="text-[30px] font-bold text-ink-black leading-[34px] tracking-[0] mb-[6px]">
-            Delivered
+            Authenticated
           </h1>
           <p className="text-[15px] text-[#666666] leading-[22px]">
-            Successfully Authenticated
+            Verified Successfully
           </p>
         </div>
 
@@ -44,7 +44,7 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
               }
             }}
           >
-            View Record
+            VIEW RECORD
           </InkButton>
         </div>
 
@@ -56,8 +56,8 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
             animationFillMode: "backwards",
           }}
         >
-          <p className="text-[13px] text-[#999999] tracking-[0.5px] uppercase">
-            Authenticated by ink
+          <p className="text-[13px] text-[#999999] tracking-[0.5px]">
+            By ink.
           </p>
         </footer>
       </main>

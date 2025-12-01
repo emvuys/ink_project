@@ -17,7 +17,7 @@ const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
       {/* Main Content - Centered */}
       <div className="flex flex-col items-center">
         <p className="text-[16px] text-ink-black mb-4">
-          Verify Delivery
+          Verifying
         </p>
         
         {/* Pulsing Line */}
@@ -26,11 +26,16 @@ const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
         />
         
         <p className="text-[14px] text-[#666666]">
-          Requesting location...
+          Requesting location…
         </p>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0">
+        <div className="text-center mb-8 pb-4">
+          <p className="text-[13px] text-[#999999] tracking-[0.5px]">
+            By ink.
+          </p>
+        </div>
         <PrivacyLink />
       </div>
     </div>

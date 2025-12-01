@@ -111,10 +111,10 @@ const Record = () => {
       <main className="flex flex-col items-center px-6 pt-[40px]">
         <div className="text-center mb-4 animate-fade-up">
           <h1 className="text-[30px] font-bold text-ink-black leading-[34px] tracking-[0] mb-1">
-            Delivery Record
+            Authenticated Record
           </h1>
           <p className="text-[15px] text-[#666666] leading-[22px]">
-            Verified by ink
+            By ink.
           </p>
         </div>
 
@@ -128,7 +128,7 @@ const Record = () => {
           <div className="space-y-1.5">
             <p className="text-[15px] text-ink-black leading-[22px]">
               <span className="font-bold">
-                {proof.delivery ? 'Delivered' : 'Enrolled'}
+                Authenticated
               </span> · {formatTimestamp(proof.enrollment.timestamp)}
             </p>
             {proof.merchant && (
@@ -220,8 +220,8 @@ const Record = () => {
             animationFillMode: "backwards",
           }}
         >
-          <p className="text-[13px] text-[#999999] tracking-[0.5px] uppercase">
-            Authenticated by ink
+          <p className="text-[13px] text-[#999999] tracking-[0.5px]">
+            By ink.
           </p>
         </footer>
       </main>
