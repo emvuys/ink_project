@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { Sphere } from "@/components/Sphere";
 import { InkButton } from "@/components/ui/ink-button";
-import PrivacyLink from "@/components/PrivacyLink";
 
 interface PhoneVerificationStateProps {
   onSubmit: (phone: string) => void;
@@ -41,80 +41,88 @@ const PhoneVerificationState = ({ onSubmit, error, isLoading }: PhoneVerificatio
   }, []);
 
   return (
-    <div className="min-h-screen bg-ink-white flex flex-col items-center px-6 pt-[120px] animate-container-fade-in">
-      {/* Circle Symbol */}
-      <div className="mb-8 animate-fade-in">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="9.5" stroke="#000000" strokeWidth="1" />
-        </svg>
-      </div>
+    <div className="h-[100dvh] bg-background relative overflow-hidden">
+      <Sphere enhancedDiffusion />
 
-      {/* Headline */}
-      <div className="text-center mb-8 animate-fade-up">
-        <h1 className="text-[30px] font-bold text-ink-black leading-[34px] mb-[6px]">
-          Almost there
-        </h1>
-        <p className="text-[15px] text-[#666666] leading-[22px]">
-          Last 4 digits of your phone
-        </p>
-      </div>
-
-      {/* 4-Digit Input Boxes */}
-      <div className="flex gap-3 mb-12">
-        {digits.map((digit, index) => (
-          <input
-            key={index}
-            ref={(el) => (inputRefs.current[index] = el)}
-            type="text"
-            inputMode="numeric"
-            maxLength={1}
-            value={digit}
-            onChange={(e) => handleDigitChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(index, e)}
-            className="w-[52px] h-[52px] border border-ink-black bg-ink-white text-center text-[24px] font-bold text-ink-black focus:outline-none focus:ring-1 focus:ring-ink-black transition-transform duration-200"
-            style={{
-              transform: digit ? "scale(1.05)" : "scale(1)",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="w-full max-w-[320px] mb-4 text-center">
-          <p className="text-[13px] text-red-600">{error}</p>
-        </div>
-      )}
-
-      {/* Confirm Button */}
-      <div className="w-full max-w-[320px] mb-8">
-        <InkButton 
-          size="full"
-          className="tracking-[0.6px]"
-          disabled={digits.some(d => !d) || isLoading}
-          onClick={() => onSubmit(digits.join(''))}
-        >
-          {isLoading ? 'Verifying...' : 'Confirm'}
-        </InkButton>
-      </div>
-
-      {/* About Link */}
-      <div className="text-center max-w-[320px]">
-        <button 
-          onClick={() => setIsAboutExpanded(!isAboutExpanded)}
-          className="text-[13px] text-[#666666] underline hover:text-ink-black transition-colors"
-        >
-          About this step
-        </button>
-        {isAboutExpanded && (
-          <p className="mt-3 text-[14px] text-[#666666] leading-[22px] animate-fade-in">
-            This quick check helps confirm the package is being received by the right person.
+      <main className="absolute inset-0 flex items-center justify-center z-10 pointer-events-auto" style={{ transform: 'translateY(-15%)' }}>
+        <div className="text-center px-6">
+          <h1 
+            className="text-5xl md:text-6xl font-medium tracking-tight mb-4 text-[#1a1a2e] pb-2"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Verifying
+          </h1>
+          <p className="text-xs text-[#5a5a6e] mb-8">
+            Verify Phone Number
           </p>
-        )}
-      </div>
+          <p className="text-[10px] text-[#5a5a6e] mb-8 max-w-xs mx-auto">
+            You're a bit far away from the delivery address. Please enter the last four digits of the phone number on order to verify delivery.
+          </p>
+          
+          {/* 4-Digit Input Boxes */}
+          <div className="flex gap-3 mb-6 justify-center">
+            {digits.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => (inputRefs.current[index] = el)}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleDigitChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                className="w-14 h-14 bg-white border-0 rounded-lg text-xl font-medium text-[#1a1a2e] shadow-sm text-center focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+                style={{
+                  transform: digit ? "scale(1.05)" : "scale(1)",
+                }}
+              />
+            ))}
+          </div>
 
-      <div className="mt-auto">
-        <PrivacyLink />
+          {/* Error Message */}
+          {error && (
+            <div className="w-full max-w-[320px] mb-4 text-center">
+              <p className="text-[13px] text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Confirm Button */}
+          <div className="w-full max-w-[320px] mb-6">
+            <InkButton 
+              size="full"
+              className="tracking-[0.6px]"
+              disabled={digits.some(d => !d) || isLoading}
+              onClick={() => onSubmit(digits.join(''))}
+            >
+              {isLoading ? 'Verifying...' : 'Confirm'}
+            </InkButton>
+          </div>
+
+          {/* About Link */}
+          <div className="text-center max-w-[320px]">
+            <button 
+              onClick={() => setIsAboutExpanded(!isAboutExpanded)}
+              className="text-[11px] text-[#5a5a6e] underline hover:text-[#1a1a2e] transition-colors"
+            >
+              About this step
+            </button>
+            {isAboutExpanded && (
+              <p className="mt-3 text-[11px] text-[#5a5a6e] leading-[18px] animate-fade-in">
+                This quick check helps confirm the package is being received by the right person.
+              </p>
+            )}
+          </div>
+        </div>
+      </main>
+      
+      {/* Privacy Policy link */}
+      <div className="absolute bottom-8 left-0 right-0 text-center z-10 pointer-events-auto">
+        <a 
+          href="/privacy" 
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          Privacy Policy
+        </a>
       </div>
     </div>
   );

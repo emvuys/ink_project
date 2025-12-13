@@ -1,27 +1,32 @@
-import PrivacyLink from "@/components/PrivacyLink";
+import { Sphere } from "@/components/Sphere";
 
 const InvalidLinkState = () => {
   return (
-    <div className="min-h-screen bg-ink-white flex flex-col items-center px-6 pt-[120px] animate-container-fade-in">
-      {/* Horizontal Dash Symbol */}
-      <div className="mb-8 animate-fade-in">
-        <svg width="40" height="2" viewBox="0 0 40 2" fill="none">
-          <line x1="0" y1="1" x2="40" y2="1" stroke="#000000" strokeWidth="1" />
-        </svg>
-      </div>
+    <div className="h-[100dvh] bg-background relative overflow-hidden">
+      <Sphere />
 
-      {/* Headline */}
-      <div className="text-center animate-fade-up mb-auto">
-        <h1 className="text-[30px] font-bold text-ink-black leading-[34px] mb-[6px]">
-          Page not found
-        </h1>
-        <p className="text-[15px] text-[#666666] leading-[22px]">
-          This link is no longer active
-        </p>
-      </div>
-
-      <div className="mt-auto">
-        <PrivacyLink />
+      <main className="absolute inset-0 flex items-center justify-center pointer-events-none z-10" style={{ transform: 'translateY(-15%)' }}>
+        <div className="text-center animate-fade-in px-6">
+          <h1 
+            className="text-4xl md:text-5xl font-medium tracking-tight mb-4 text-[#1a1a2e]"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Page Not Found
+          </h1>
+          <p className="text-xs text-[#5a5a6e]">
+            This link is no longer active
+          </p>
+        </div>
+      </main>
+      
+      {/* Privacy Policy link */}
+      <div className="absolute bottom-8 left-0 right-0 text-center z-10 pointer-events-auto">
+        <a 
+          href="/privacy" 
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          Privacy Policy
+        </a>
       </div>
     </div>
   );

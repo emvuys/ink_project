@@ -1,5 +1,5 @@
+import { Sphere } from "@/components/Sphere";
 import { InkButton } from "@/components/ui/ink-button";
-import PrivacyLink from "@/components/PrivacyLink";
 
 interface FailedStateProps {
   message?: string;
@@ -7,39 +7,44 @@ interface FailedStateProps {
 
 const FailedState = ({ message }: FailedStateProps) => {
   return (
-    <div className="min-h-screen bg-ink-white flex flex-col items-center px-6 pt-[120px] animate-container-fade-in">
-      {/* Mismatch Symbol */}
-      <div className="mb-8 animate-fade-in">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <line x1="8" y1="12" x2="24" y2="12" stroke="#000000" strokeWidth="1.5" />
-          <line x1="8" y1="20" x2="24" y2="20" stroke="#000000" strokeWidth="1.5" />
-          <line x1="14" y1="11" x2="18" y2="21" stroke="#000000" strokeWidth="1.5" />
-        </svg>
-      </div>
+    <div className="h-[100dvh] bg-background relative overflow-hidden">
+      <Sphere />
 
-      {/* Headline */}
-      <div className="text-center mb-16 animate-fade-up">
-        <h1 className="text-[30px] font-bold text-ink-black leading-[34px] mb-[6px]">
-          Unable to confirm
-        </h1>
-        <p className="text-[15px] text-[#666666] leading-[22px]">
-          {message || "Your location or phone number didn't match"}
-        </p>
-      </div>
+      <main className="absolute inset-0 flex items-center justify-center pointer-events-none z-10" style={{ transform: 'translateY(-15%)' }}>
+        <div className="text-center animate-fade-in px-6">
+          <h1 
+            className="text-4xl md:text-5xl font-medium tracking-tight mb-4 text-[#1a1a2e]"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Unable To Confirm
+          </h1>
+          <p className="text-xs text-[#5a5a6e] mb-6">
+            {message || "Your location or phone number didn't match"}
+          </p>
+        </div>
+      </main>
 
       {/* Action Button */}
-      <div className="w-full max-w-[320px] mb-auto">
-        <InkButton 
-          size="full"
-          className="tracking-[0.6px]"
-          onClick={() => window.location.reload()}
+      <nav className="fixed bottom-44 left-0 right-0 z-50 flex justify-center overflow-visible pointer-events-auto">
+        <div className="overflow-visible max-w-[320px] w-full px-6">
+          <InkButton 
+            size="full"
+            className="tracking-[0.6px]"
+            onClick={() => window.location.reload()}
+          >
+            Try again
+          </InkButton>
+        </div>
+      </nav>
+      
+      {/* Privacy Policy link */}
+      <div className="absolute bottom-8 left-0 right-0 text-center z-10 pointer-events-auto">
+        <a 
+          href="/privacy" 
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
         >
-          Try again
-        </InkButton>
-      </div>
-
-      <div className="mt-auto">
-        <PrivacyLink />
+          Privacy Policy
+        </a>
       </div>
     </div>
   );

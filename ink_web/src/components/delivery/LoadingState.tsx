@@ -1,4 +1,4 @@
-import PrivacyLink from "@/components/PrivacyLink";
+import { Sphere } from "@/components/Sphere";
 
 interface LoadingStateProps {
   onRequestLocation?: () => void;
@@ -6,37 +6,46 @@ interface LoadingStateProps {
 
 const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
   return (
-    <div className="min-h-screen bg-ink-white flex flex-col items-center justify-center px-6 animate-container-fade-in">
-      {/* INK Wordmark */}
-      <div className="absolute top-[120px] opacity-0">
-        <h1 className="text-[24px] font-bold text-ink-black tracking-tight">
-          ink
-        </h1>
-      </div>
+    <div className="h-[100dvh] bg-background relative overflow-hidden">
+      <Sphere enhancedDiffusion />
 
-      {/* Main Content - Centered */}
-      <div className="flex flex-col items-center">
-        <p className="text-[16px] text-ink-black mb-4">
-          Verifying
-        </p>
-        
-        {/* Pulsing Line */}
-        <div 
-          className="w-[60px] h-[1px] bg-ink-black animate-pulse-line mb-6"
-        />
-        
-        <p className="text-[14px] text-[#666666]">
-          Requesting location…
-        </p>
-      </div>
-
-      <div className="absolute bottom-0 left-0 right-0">
-        <div className="text-center mb-8 pb-4">
-          <p className="text-[13px] text-[#999999] tracking-[0.5px]">
-            By ink.
+      <main className="absolute inset-0 flex items-center justify-center pointer-events-none z-10" style={{ transform: 'translateY(-15%)' }}>
+        <div className="text-center">
+          <h1 
+            className="text-5xl md:text-6xl font-medium tracking-tight mb-4 text-[#1a1a2e] pb-2"
+            style={{ 
+              fontFamily: "'Playfair Display', serif",
+              animation: 'horizontalWipe 3s ease-out forwards',
+              animationDelay: '0.6s',
+              clipPath: 'inset(0 100% 0 0)',
+              willChange: 'clip-path',
+              transform: 'translateZ(0)'
+            }}
+          >
+            Verifying
+          </h1>
+          <p 
+            className="text-xs text-[#5a5a6e]"
+            style={{ 
+              opacity: 0,
+              animation: 'gentleFadeIn 1.5s ease-out 3.8s forwards, subtlePulse 3s ease-in-out 5.5s infinite',
+              willChange: 'opacity, transform',
+              transform: 'translateZ(0)'
+            }}
+          >
+            Requesting Location
           </p>
         </div>
-        <PrivacyLink />
+      </main>
+      
+      {/* Privacy Policy link */}
+      <div className="absolute bottom-8 left-0 right-0 text-center z-10">
+        <a 
+          href="/privacy" 
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          Privacy Policy
+        </a>
       </div>
     </div>
   );

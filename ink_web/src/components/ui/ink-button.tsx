@@ -3,16 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const inkButtonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap font-bold uppercase transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink-black disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap font-semibold uppercase transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50 active:scale-95",
   {
     variants: {
       variant: {
-        primary: "bg-ink-black text-ink-white hover:opacity-90",
-        secondary: "bg-ink-white text-ink-black border border-ink-black hover:opacity-90",
+        primary: "bg-[#1a1a2e] text-white hover:bg-[#252540] shadow-lg hover:shadow-xl",
+        secondary: "bg-background text-foreground border border-border hover:bg-secondary shadow-neumorphic hover:shadow-neumorphic-inset",
       },
       size: {
-        default: "h-[56px] px-8 text-[14px]",
-        full: "h-[56px] w-full px-8 text-[14px]",
+        default: "h-[56px] px-8 text-[13px] rounded-xl",
+        full: "h-[56px] w-full px-8 text-[13px] rounded-xl",
       },
     },
     defaultVariants: {
