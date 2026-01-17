@@ -1,7 +1,17 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sphere } from "@/components/Sphere";
 
-const Index = () => {
-  const text = "Verifying";
+const AuthUnlocking = () => {
+  const navigate = useNavigate();
+  const text = "Unlocking";
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate("/auth/phone-verification");
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
   
   return (
     <div className="h-[100dvh] bg-background relative overflow-hidden">
@@ -21,6 +31,11 @@ const Index = () => {
             }}
           >
             {text}
+            <span className="inline-flex ml-1">
+              <span className="animate-[subtleScale_2s_ease-in-out_infinite]">.</span>
+              <span className="animate-[subtleScale_2s_ease-in-out_0.3s_infinite]">.</span>
+              <span className="animate-[subtleScale_2s_ease-in-out_0.6s_infinite]">.</span>
+            </span>
           </h1>
           <p 
             className="text-xs text-[#5a5a6e]"
@@ -45,8 +60,19 @@ const Index = () => {
           Privacy Policy
         </a>
       </div>
+
+      <style>{`
+        @keyframes subtleScale {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.04);
+          }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default Index;
+export default AuthUnlocking;

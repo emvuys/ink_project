@@ -14,12 +14,13 @@ export async function reverseGeocode(coordinates: GpsCoordinates): Promise<Geoco
   try {
     const { lat, lng } = coordinates;
     
-    // Use Nominatim API (OpenStreetMap's geocoding service)
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    // Use Nominatim API (OpenStreetMap's geocoding service) with English language
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
     
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'INK-Delivery-Verification/1.0', // Required by Nominatim
+        'Accept-Language': 'en-US,en;q=0.9',
       },
     });
 

@@ -1,26 +1,25 @@
 const express = require('express');
 const { db, FieldValue } = require('../config/database');
 const { signData } = require('../utils/crypto');
-const { calculateDistance, getGpsVerdict } = require('../utils/gps');
 const { sendWebhook } = require('../utils/webhook');
+const { calculateDistance, getGpsVerdict } = require('../utils/gps');
 
 const router = express.Router();
 
-// POST /verify - Verify delivery when customer taps NFC
 router.post('/', async (req, res) => {
   try {
     const {
       nfc_token,
       delivery_gps,
       device_info,
-      phone_last4
+      phone_last4,
+      delivery_type
     } = req.body;
 
     if (!nfc_token || !delivery_gps) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Find enrollment record by nfc_token
     const tokenQuery = await db.collection('proofs')
       .where('nfc_token', '==', nfc_token)
       .limit(1)
@@ -36,7 +35,6 @@ router.post('/', async (req, res) => {
 
     const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
-    // Check if already verified - return proof info instead of error
     if (proof.delivery_timestamp) {
       if (isDevelopment) {
         console.log('[VERIFY] Already verified, returning existing proof info');
@@ -45,99 +43,85 @@ router.post('/', async (req, res) => {
       return res.json({
         proof_id: proofId,
         verification_status: 'verified',
-        gps_verdict: proof.gps_verdict || 'pass',
-        distance_meters: proof.delivery_gps && proof.shipping_address_gps 
-          ? Math.round(calculateDistance(
-              proof.delivery_gps.lat,
-              proof.delivery_gps.lng,
-              proof.shipping_address_gps.lat,
-              proof.shipping_address_gps.lng
-            ))
-          : 0,
         signature: proof.signature || '',
         verify_url: `https://in.ink/verify/${proofId}`,
-        already_verified: true
+        already_verified: true,
+        gps_verdict: proof.gps_verdict || 'pass',
+        phone_verified: proof.phone_verified || false
       });
     }
+
     if (isDevelopment) {
       console.log('[VERIFY] Found proof record');
       console.log('[VERIFY] Proof ID:', proofId);
       console.log('[VERIFY] Order ID:', proof.order_id);
     }
 
-    // Calculate GPS distance
-    const shippingGps = proof.shipping_address_gps;
-    
-    if (isDevelopment) {
-      console.log('[VERIFY] Calculating GPS distance');
-      console.log('[VERIFY] Delivery GPS:', JSON.stringify(delivery_gps, null, 2));
-      console.log('[VERIFY] Shipping GPS:', JSON.stringify(shippingGps, null, 2));
-    }
-    
-    const distance = calculateDistance(
-      delivery_gps.lat,
-      delivery_gps.lng,
-      shippingGps.lat,
-      shippingGps.lng
-    );
-
-    const verdict = getGpsVerdict(distance);
-    
-    if (isDevelopment) {
-      console.log('[VERIFY] Distance calculated:', Math.round(distance), 'meters');
-      console.log('[VERIFY] GPS verdict:', verdict);
-    }
-
-    // Check if phone verification needed
+    // Calculate GPS distance if shipping address GPS is available
+    let distance = 0;
+    let gpsVerdict = 'pass';
     let phoneVerified = false;
-    let verificationStatus = 'verified';
 
-    if (distance > 100) {
-      // Phone verification required
+    if (proof.shipping_address_gps && proof.shipping_address_gps.lat && proof.shipping_address_gps.lng) {
+      distance = calculateDistance(
+        delivery_gps.lat,
+        delivery_gps.lng,
+        proof.shipping_address_gps.lat,
+        proof.shipping_address_gps.lng
+      );
+      gpsVerdict = getGpsVerdict(distance);
+
       if (isDevelopment) {
-        console.log('[VERIFY] Distance > 100m, phone verification required');
+        console.log('[VERIFY] GPS distance calculated:', Math.round(distance), 'meters');
+        console.log('[VERIFY] GPS verdict:', gpsVerdict);
       }
+
+      // Check if phone verification is required
+      // Only require phone verification for 'authenticate' delivery type
+      const isPremium = delivery_type === 'premium';
       
-      if (!phone_last4) {
-        if (isDevelopment) {
-          console.log('[VERIFY] Phone verification required but not provided');
+      if (!isPremium && distance > 100 && proof.customer_phone_last4) {
+        // Phone verification is required for authenticate type
+        if (!phone_last4) {
+          if (isDevelopment) {
+            console.log('[VERIFY] Phone verification required (distance > 100m, authenticate type)');
+          }
+          return res.status(400).json({
+            error: 'Phone verification required',
+            requires_phone: true,
+            distance_meters: Math.round(distance)
+          });
         }
-        return res.status(400).json({ 
-          error: 'Phone verification required',
-          requires_phone: true
-        });
-      }
 
-      if (isDevelopment) {
-        console.log('[VERIFY] Verifying phone last 4 digits');
-        console.log('[VERIFY] Provided:', phone_last4);
-        console.log('[VERIFY] Expected:', proof.customer_phone_last4);
-      }
-
-      if (phone_last4 !== proof.customer_phone_last4) {
-        if (isDevelopment) {
-          console.log('[VERIFY] Phone verification failed');
+        // Verify phone number
+        if (phone_last4 !== proof.customer_phone_last4) {
+          if (isDevelopment) {
+            console.log('[VERIFY] Phone verification failed');
+          }
+          return res.status(403).json({
+            error: 'Phone verification failed',
+            requires_phone: true
+          });
         }
-        return res.status(403).json({ error: 'Phone verification failed' });
-      }
 
-      phoneVerified = true;
-      if (isDevelopment) {
-        console.log('[VERIFY] Phone verification successful');
+        phoneVerified = true;
+        if (isDevelopment) {
+          console.log('[VERIFY] Phone verification passed');
+        }
+      } else if (isPremium && isDevelopment) {
+        console.log('[VERIFY] Premium delivery type - skipping phone verification');
       }
     } else {
       if (isDevelopment) {
-        console.log('[VERIFY] Distance <= 100m, phone verification not required');
+        console.log('[VERIFY] No shipping address GPS available, skipping distance check');
       }
     }
 
-    // Update signature with delivery data
     const deliverySignatureData = {
       proof_id: proofId,
       order_id: proof.order_id,
       delivery_gps,
-      timestamp: new Date().toISOString(),
-      gps_verdict: verdict
+      timestamp: new Date().toISOString()
     };
 
     if (isDevelopment) {
@@ -151,7 +135,6 @@ router.post('/', async (req, res) => {
       console.log('[VERIFY] Delivery signature generated');
     }
 
-    // Update Firestore document
     if (isDevelopment) {
       console.log('[VERIFY] Updating Firestore document...');
     }
@@ -160,7 +143,7 @@ router.post('/', async (req, res) => {
       delivery_timestamp: FieldValue.serverTimestamp(),
       delivery_gps: delivery_gps,
       device_info: device_info || 'Unknown',
-      gps_verdict: verdict,
+      gps_verdict: gpsVerdict,
       phone_verified: phoneVerified,
       signature: newSignature,
       updated_at: FieldValue.serverTimestamp()
@@ -168,14 +151,14 @@ router.post('/', async (req, res) => {
     
     if (isDevelopment) {
       console.log('[VERIFY] Firestore document updated successfully');
+      console.log('[VERIFY] GPS verdict:', gpsVerdict);
+      console.log('[VERIFY] Phone verified:', phoneVerified);
     }
 
-    // Send webhook to Shopify
     const webhookPayload = {
       order_id: proof.order_id,
-      status: verificationStatus,
+      status: 'verified',
       delivery_gps,
-      gps_verdict: verdict,
       proof_ref: proofId,
       timestamp: new Date().toISOString(),
       verify_url: `https://in.ink/verify/${proofId}`
@@ -186,7 +169,6 @@ router.post('/', async (req, res) => {
       console.log('[VERIFY] Webhook payload:', JSON.stringify(webhookPayload, null, 2));
     }
 
-    // Send webhook asynchronously (don't wait for it to complete)
     sendWebhook(webhookPayload).then(result => {
       if (result.skipped) {
         if (isDevelopment) {
@@ -206,11 +188,12 @@ router.post('/', async (req, res) => {
 
     res.json({
       proof_id: proofId,
-      verification_status: verificationStatus,
-      gps_verdict: verdict,
-      distance_meters: Math.round(distance),
+      verification_status: 'verified',
       signature: newSignature,
-      verify_url: `https://in.ink/verify/${proofId}`
+      verify_url: `https://in.ink/verify/${proofId}`,
+      gps_verdict: gpsVerdict,
+      phone_verified: phoneVerified,
+      distance_meters: Math.round(distance)
     });
 
   } catch (error) {
@@ -229,4 +212,3 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
-

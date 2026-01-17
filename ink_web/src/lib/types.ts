@@ -8,21 +8,24 @@ export interface VerifyRequest {
   delivery_gps: GpsCoordinates;
   device_info?: string;
   phone_last4?: string;
+  delivery_type?: 'premium' | 'authenticate';
 }
 
 export interface VerifyResponse {
   proof_id: string;
   verification_status: string;
-  gps_verdict: 'pass' | 'near' | 'flagged';
-  distance_meters: number;
   signature: string;
   verify_url: string;
-  already_verified?: boolean; // Indicates if this was already verified before
+  already_verified?: boolean;
+  gps_verdict?: 'pass' | 'near' | 'flagged';
+  phone_verified?: boolean;
+  distance_meters?: number;
 }
 
 export interface VerifyErrorResponse {
   error: string;
   requires_phone?: boolean;
+  distance_meters?: number;
 }
 
 export interface EnrollmentData {

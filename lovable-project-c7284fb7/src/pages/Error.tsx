@@ -14,7 +14,7 @@ const Error = () => {
             Unable To Confirm
           </h1>
           <p className="text-xs text-[#5a5a6e] mb-6">
-            Location access is required to verify delivery
+            Location access is required to confirm your delivery
           </p>
           <button 
             onClick={() => window.location.reload()}

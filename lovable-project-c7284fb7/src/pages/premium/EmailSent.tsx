@@ -1,24 +1,9 @@
 import { Sphere } from "@/components/Sphere";
-import { InkButton } from "@/components/ui/ink-button";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-interface SuccessStateProps {
-  proofId?: string;
-  verifyUrl?: string;
-}
-
-const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
+const PremiumEmailSent = () => {
   const navigate = useNavigate();
-
-  const handleViewRecord = () => {
-    if (proofId) {
-      navigate(`/verify/${proofId}`);
-    } else if (verifyUrl) {
-      const match = verifyUrl.match(/\/verify\/([^\/]+)$/);
-      if (match) navigate(`/verify/${match[1]}`);
-    }
-  };
-
   return (
     <div className="h-[100dvh] bg-background relative">
       <Sphere />
@@ -30,7 +15,7 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
         <div className="text-center animate-fade-in">
           <h1
             className="text-5xl md:text-6xl font-medium tracking-tight mb-4 text-[#1a1a2e]"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            style={{ fontFamily: "'DM Serif Display', serif" }}
           >
             Delivery Confirmed
           </h1>
@@ -39,20 +24,21 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
         </div>
       </main>
 
-      <div className="absolute bottom-24 left-0 right-0 text-center z-10 pointer-events-auto">
-        <InkButton 
-          onClick={handleViewRecord}
-          variant="secondary"
-          className="bg-transparent border-[#d0d0d8] text-[#5a5a6e] hover:bg-[#f0f0f4] hover:text-[#4a4a5e] text-xs px-6 normal-case"
+      {/* View Record link */}
+      <div className="absolute bottom-24 left-0 right-0 text-center z-10">
+        <Button
+          variant="outline"
+          onClick={() => navigate("/premium/delivery-record")}
+          className="bg-transparent border-[#d0d0d8] text-[#5a5a6e] hover:bg-[#f0f0f4] hover:text-[#4a4a5e] text-xs px-6"
         >
           View Record
-        </InkButton>
+        </Button>
       </div>
-      
+
       {/* Privacy Policy link */}
-      <div className="absolute bottom-8 left-0 right-0 text-center z-10 pointer-events-auto">
-        <a 
-          href="/privacy" 
+      <div className="absolute bottom-8 left-0 right-0 text-center z-10">
+        <a
+          href="/privacy"
           className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
         >
           Privacy Policy
@@ -62,4 +48,4 @@ const SuccessState = ({ proofId, verifyUrl }: SuccessStateProps) => {
   );
 };
 
-export default SuccessState;
+export default PremiumEmailSent;

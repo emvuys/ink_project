@@ -25,16 +25,16 @@ const Privacy = () => {
             <section>
               <h2 className="text-lg font-serif text-foreground mb-2">Data Collection</h2>
               <p className="text-xs leading-relaxed">
-                We collect only the information necessary to verify ink authenticity. 
-                This includes verification codes and timestamps.
+                We collect only the information necessary to provide premium shipping services. 
+                This includes delivery confirmations and timestamps.
               </p>
             </section>
             
             <section>
               <h2 className="text-lg font-serif text-foreground mb-2">Data Usage</h2>
               <p className="text-xs leading-relaxed">
-                Your verification data is used solely to confirm product authenticity 
-                and is never shared with third parties.
+                Your delivery data is used solely to confirm successful deliveries 
+                and provide premium service features. It is never shared with third parties.
               </p>
             </section>
             

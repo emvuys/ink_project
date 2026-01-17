@@ -19,7 +19,7 @@ const FailedState = ({ message }: FailedStateProps) => {
             Unable To Confirm
           </h1>
           <p className="text-xs text-[#5a5a6e] mb-6">
-            {message || "Your location or phone number didn't match"}
+            {message || "Verification failed. Please try again."}
           </p>
         </div>
       </main>

@@ -17,13 +17,12 @@ const Home = () => {
             ink
           </h1>
           <span 
-            className="absolute top-0 text-6xl md:text-8xl font-serif tracking-tight"
+            className="absolute top-0 text-6xl md:text-8xl font-serif tracking-tight text-foreground"
             style={{ 
               fontFamily: "'DM Serif Display', serif",
               right: '-0.3em',
-              color: 'hsl(var(--foreground))',
               opacity: 0,
-              animation: 'periodFadeIn 2s cubic-bezier(0.4, 0, 0.2, 1) 1.6s forwards'
+              animation: 'gentleFadeIn 1.2s ease-out 1.5s forwards'
             }}
           >.</span>
         </div>
@@ -54,3 +53,4 @@ const Home = () => {
 };
 
 export default Home;
+

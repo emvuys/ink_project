@@ -1,10 +1,18 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sphere } from "@/components/Sphere";
 
-interface LoadingStateProps {
-  onRequestLocation?: () => void;
-}
+const PremiumUnlocking = () => {
+  const navigate = useNavigate();
+  const text = "Unlocking";
 
-const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate("/premium/email-sent");
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+  
   return (
     <div className="h-[100dvh] bg-background relative overflow-hidden">
       <Sphere enhancedDiffusion />
@@ -14,7 +22,7 @@ const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
           <h1 
             className="text-5xl md:text-6xl font-medium tracking-tight mb-4 text-[#1a1a2e] pb-2"
             style={{ 
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'DM Serif Display', serif",
               animation: 'horizontalWipe 3s ease-out forwards',
               animationDelay: '0.6s',
               clipPath: 'inset(0 100% 0 0)',
@@ -22,7 +30,7 @@ const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
               transform: 'translateZ(0)'
             }}
           >
-            Unlocking
+            {text}
             <span className="inline-flex ml-1">
               <span className="animate-[subtleScale_2s_ease-in-out_infinite]">.</span>
               <span className="animate-[subtleScale_2s_ease-in-out_0.3s_infinite]">.</span>
@@ -67,4 +75,4 @@ const LoadingState = ({ onRequestLocation }: LoadingStateProps) => {
   );
 };
 
-export default LoadingState;
+export default PremiumUnlocking;
