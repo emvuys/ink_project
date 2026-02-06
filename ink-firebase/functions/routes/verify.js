@@ -16,7 +16,14 @@ router.post('/', async (req, res) => {
       delivery_type
     } = req.body;
 
+    console.log('[VERIFY] Received request:');
+    console.log('[VERIFY] - nfc_token:', nfc_token ? nfc_token.substring(0, 10) + '...' : 'null');
+    console.log('[VERIFY] - delivery_gps:', JSON.stringify(delivery_gps));
+    console.log('[VERIFY] - device_info:', device_info);
+    console.log('[VERIFY] - delivery_type:', delivery_type);
+
     if (!nfc_token || !delivery_gps) {
+      console.log('[VERIFY] Missing required fields');
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -36,10 +43,10 @@ router.post('/', async (req, res) => {
     const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
     if (proof.delivery_timestamp) {
-      if (isDevelopment) {
-        console.log('[VERIFY] Already verified, returning existing proof info');
-        console.log('[VERIFY] Proof ID:', proofId);
-      }
+      console.log('[VERIFY] Already verified, returning existing proof info');
+      console.log('[VERIFY] Proof ID:', proofId);
+      console.log('[VERIFY] Existing delivery_gps:', JSON.stringify(proof.delivery_gps));
+      console.log('[VERIFY] Existing gps_verdict:', proof.gps_verdict);
       return res.json({
         proof_id: proofId,
         verification_status: 'verified',
@@ -55,14 +62,14 @@ router.post('/', async (req, res) => {
     const enrollmentTime = proof.enrollment_timestamp?.toDate?.() || proof.created_at?.toDate?.();
     if (enrollmentTime) {
       const elapsedMs = Date.now() - enrollmentTime.getTime();
-      const minWaitMs = 2 * 60 * 1000;
+      const minWaitMs = 10 * 1000;
       if (elapsedMs < minWaitMs) {
         const waitSeconds = Math.ceil((minWaitMs - elapsedMs) / 1000);
         if (isDevelopment) {
           console.log('[VERIFY] Tap too soon after enroll, elapsed ms:', elapsedMs);
         }
         return res.status(400).json({
-          error: 'Please wait at least 2 minutes after enrollment before confirming delivery',
+          error: 'Please wait at least 10 seconds after enrollment before confirming delivery',
           code: 'TOO_SOON_AFTER_ENROLL',
           wait_seconds: waitSeconds
         });
@@ -121,9 +128,12 @@ router.post('/', async (req, res) => {
       console.log('[VERIFY] Delivery signature generated');
     }
 
-    if (isDevelopment) {
-      console.log('[VERIFY] Updating Firestore document...');
-    }
+    console.log('[VERIFY] Updating Firestore document...');
+    console.log('[VERIFY] Data to save:');
+    console.log('[VERIFY] - delivery_gps:', JSON.stringify(delivery_gps));
+    console.log('[VERIFY] - device_info:', device_info || 'Unknown');
+    console.log('[VERIFY] - gps_verdict:', gpsVerdict);
+    console.log('[VERIFY] - phone_verified:', phoneVerified);
     
     await db.collection('proofs').doc(proofId).update({
       delivery_timestamp: FieldValue.serverTimestamp(),
@@ -135,11 +145,8 @@ router.post('/', async (req, res) => {
       updated_at: FieldValue.serverTimestamp()
     });
     
-    if (isDevelopment) {
-      console.log('[VERIFY] Firestore document updated successfully');
-      console.log('[VERIFY] GPS verdict:', gpsVerdict);
-      console.log('[VERIFY] Phone verified:', phoneVerified);
-    }
+    console.log('[VERIFY] Firestore document updated successfully');
+    console.log('[VERIFY] Proof ID:', proofId);
 
     const webhookPayload = {
       order_id: proof.order_id,

@@ -17,9 +17,21 @@ router.get('/:proofId', async (req, res) => {
 
     const proof = proofDoc.data();
 
+    // Debug logging
+    console.log('[RETRIEVE] Raw proof data:');
+    console.log('[RETRIEVE] - delivery_timestamp:', proof.delivery_timestamp);
+    console.log('[RETRIEVE] - delivery_gps:', JSON.stringify(proof.delivery_gps));
+    console.log('[RETRIEVE] - gps_verdict:', proof.gps_verdict);
+    console.log('[RETRIEVE] - device_info:', proof.device_info);
+
     // Convert Firestore Timestamps to ISO strings
     const enrollmentTimestamp = proof.enrollment_timestamp?.toDate?.()?.toISOString() || proof.enrollment_timestamp;
     const deliveryTimestamp = proof.delivery_timestamp?.toDate?.()?.toISOString() || proof.delivery_timestamp;
+
+    console.log('[RETRIEVE] Converted timestamps:');
+    console.log('[RETRIEVE] - enrollmentTimestamp:', enrollmentTimestamp);
+    console.log('[RETRIEVE] - deliveryTimestamp:', deliveryTimestamp);
+    console.log('[RETRIEVE] - deliveryTimestamp truthy:', !!deliveryTimestamp);
 
     // Mask order_id for privacy
     const maskedOrderId = proof.order_id.slice(0, 4) + '***' + proof.order_id.slice(-3);
