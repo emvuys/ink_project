@@ -17,12 +17,13 @@ const Home = () => {
             ink
           </h1>
           <span 
-            className="absolute top-0 text-6xl md:text-8xl font-serif tracking-tight text-foreground"
+            className="absolute top-0 text-6xl md:text-8xl font-serif tracking-tight"
             style={{ 
               fontFamily: "'DM Serif Display', serif",
               right: '-0.3em',
+              color: 'hsl(var(--foreground))',
               opacity: 0,
-              animation: 'gentleFadeIn 1.2s ease-out 1.5s forwards'
+              animation: 'periodFadeIn 2s cubic-bezier(0.4, 0, 0.2, 1) 1.6s forwards'
             }}
           >.</span>
         </div>
@@ -34,7 +35,7 @@ const Home = () => {
         
         {/* Body subtext */}
         <p className="text-[11px] text-[#7a7a8e] max-w-sm leading-relaxed mt-4" style={{ fontFamily: "Inter, sans-serif" }}>
-          Every shipment is equipped with NFC authentication, GPS-confirmed delivery, and pre-shipment documentation—protecting your brand while providing one final touchpoint in the purchase journey.
+          Every shipment is equipped with NFC-enabled delivery confirmation, GPS-verified delivery location, and package documentation—protecting your brand while providing one final touchpoint in the purchase journey.
         </p>
       </div>
       
@@ -53,4 +54,3 @@ const Home = () => {
 };
 
 export default Home;
-

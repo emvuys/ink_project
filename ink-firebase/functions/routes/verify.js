@@ -51,6 +51,24 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // 写入标签后 2 分钟内不允许 tap 交付，避免误触立即触发交付
+    const enrollmentTime = proof.enrollment_timestamp?.toDate?.() || proof.created_at?.toDate?.();
+    if (enrollmentTime) {
+      const elapsedMs = Date.now() - enrollmentTime.getTime();
+      const minWaitMs = 2 * 60 * 1000;
+      if (elapsedMs < minWaitMs) {
+        const waitSeconds = Math.ceil((minWaitMs - elapsedMs) / 1000);
+        if (isDevelopment) {
+          console.log('[VERIFY] Tap too soon after enroll, elapsed ms:', elapsedMs);
+        }
+        return res.status(400).json({
+          error: 'Please wait at least 2 minutes after enrollment before confirming delivery',
+          code: 'TOO_SOON_AFTER_ENROLL',
+          wait_seconds: waitSeconds
+        });
+      }
+    }
+
     if (isDevelopment) {
       console.log('[VERIFY] Found proof record');
       console.log('[VERIFY] Proof ID:', proofId);
@@ -76,41 +94,9 @@ router.post('/', async (req, res) => {
         console.log('[VERIFY] GPS verdict:', gpsVerdict);
       }
 
-      // Check if phone verification is required
-      // Only require phone verification for 'authenticate' delivery type
-      const isPremium = delivery_type === 'premium';
-      
-      if (!isPremium && distance > 100 && proof.customer_phone_last4) {
-        // Phone verification is required for authenticate type
-        if (!phone_last4) {
-          if (isDevelopment) {
-            console.log('[VERIFY] Phone verification required (distance > 100m, authenticate type)');
-          }
-          return res.status(400).json({
-            error: 'Phone verification required',
-            requires_phone: true,
-            distance_meters: Math.round(distance)
-          });
-        }
-
-        // Verify phone number
-        if (phone_last4 !== proof.customer_phone_last4) {
-          if (isDevelopment) {
-            console.log('[VERIFY] Phone verification failed');
-          }
-          return res.status(403).json({
-            error: 'Phone verification failed',
-            requires_phone: true
-          });
-        }
-
-        phoneVerified = true;
-        if (isDevelopment) {
-          console.log('[VERIFY] Phone verification passed');
-        }
-      } else if (isPremium && isDevelopment) {
-        console.log('[VERIFY] Premium delivery type - skipping phone verification');
-      }
+      // Phone verification disabled: NFC tap no longer requires phone last 4 digits
+      // (Previously: required when distance > 100m and customer_phone_last4 was set)
+      // if (distance > 100 && proof.customer_phone_last4) { ... }
     } else {
       if (isDevelopment) {
         console.log('[VERIFY] No shipping address GPS available, skipping distance check');

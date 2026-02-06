@@ -25,7 +25,7 @@ const MapView = ({ lat, lng, className = "" }: MapViewProps) => {
         marginWidth={0}
         src={mapUrl}
         className="border-0"
-        title="Delivery Location Map"
+        title="Confirmed Location Tap Map"
         style={{ pointerEvents: 'none' }}
       />
     </div>

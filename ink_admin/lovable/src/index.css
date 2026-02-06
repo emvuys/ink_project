@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 20%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 20% 20%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 90% 56%;
+
+    --radius: 0.5rem;
+
+    /* Status colors */
+    --status-success: 142 76% 36%;
+    --status-success-bg: 142 76% 95%;
+    --status-warning: 38 92% 50%;
+    --status-warning-bg: 38 92% 95%;
+    --status-critical: 0 84% 60%;
+    --status-critical-bg: 0 84% 95%;
+
+    /* Dashboard specific */
+    --nav-height: 4rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 210 20% 98%;
+
+    --card: 220 20% 14%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 220 20% 14%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 20%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 220 20% 20%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 220 90% 56%;
+
+    --status-success: 142 76% 46%;
+    --status-success-bg: 142 50% 15%;
+    --status-warning: 38 92% 50%;
+    --status-warning-bg: 38 50% 15%;
+    --status-critical: 0 84% 60%;
+    --status-critical-bg: 0 50% 15%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply bg-card rounded-lg border border-border p-5 shadow-sm transition-shadow hover:shadow-md;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-success {
+    @apply bg-[hsl(var(--status-success-bg))] text-[hsl(var(--status-success))];
+  }
+
+  .status-warning {
+    @apply bg-[hsl(var(--status-warning-bg))] text-[hsl(var(--status-warning))];
+  }
+
+  .status-critical {
+    @apply bg-[hsl(var(--status-critical-bg))] text-[hsl(var(--status-critical))];
+  }
+
+  .data-table {
+    @apply w-full bg-card rounded-lg border border-border;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50;
+  }
+
+  .data-table td {
+    @apply px-4 py-4 text-sm text-foreground border-t border-border;
+  }
+
+  .data-table tbody tr {
+    @apply hover:bg-muted/30 transition-colors;
+  }
+}

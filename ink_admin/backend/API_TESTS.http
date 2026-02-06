@@ -1,0 +1,247 @@
+### INK Admin API Tests
+### Use REST Client extension in VS Code to run these tests
+### Or use curl/Postman
+
+@baseUrl = http://localhost:3001/api
+@token = YOUR_TOKEN_HERE
+
+### Health Check
+GET http://localhost:3001/health
+
+###
+### Authentication
+###
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@in.ink",
+  "password": "Admin123!"
+}
+
+### Get Current User
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+###
+### Merchants
+###
+
+### Get All Merchants
+GET {{baseUrl}}/merchants
+Authorization: Bearer {{token}}
+
+### Get Merchants with Search
+GET {{baseUrl}}/merchants?search=MAAP
+Authorization: Bearer {{token}}
+
+### Get Merchants with Status Filter
+GET {{baseUrl}}/merchants?status=critical
+Authorization: Bearer {{token}}
+
+### Get Merchants with Sorting
+GET {{baseUrl}}/merchants?sortBy=inventory&sortOrder=asc
+Authorization: Bearer {{token}}
+
+### Get Merchant by ID
+GET {{baseUrl}}/merchants/00000000-0000-0000-0000-000000000001
+Authorization: Bearer {{token}}
+
+### Create Merchant
+POST {{baseUrl}}/merchants
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Merchant",
+  "email": "test@merchant.com",
+  "phone": "+1 (555) 000-0000",
+  "address": "123 Test Street, Test City, TC 12345",
+  "alertThreshold": 5
+}
+
+### Update Merchant
+PUT {{baseUrl}}/merchants/00000000-0000-0000-0000-000000000001
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "MAAP Updated",
+  "alertThreshold": 10
+}
+
+### Update Alert Threshold
+PUT {{baseUrl}}/merchants/00000000-0000-0000-0000-000000000001/threshold
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "alertThreshold": 8
+}
+
+### Get Usage History
+GET {{baseUrl}}/merchants/00000000-0000-0000-0000-000000000001/usage
+Authorization: Bearer {{token}}
+
+### Get Refill History
+GET {{baseUrl}}/merchants/00000000-0000-0000-0000-000000000001/refills
+Authorization: Bearer {{token}}
+
+### Delete Merchant (will fail if has pending orders)
+DELETE {{baseUrl}}/merchants/00000000-0000-0000-0000-000000000001
+Authorization: Bearer {{token}}
+
+###
+### Orders
+###
+
+### Get All Orders
+GET {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+
+### Get Orders by Status
+GET {{baseUrl}}/orders?status=pending
+Authorization: Bearer {{token}}
+
+### Get Orders by Merchant
+GET {{baseUrl}}/orders?merchantId=00000000-0000-0000-0000-000000000001
+Authorization: Bearer {{token}}
+
+### Get Order by ID
+GET {{baseUrl}}/orders/FO001
+Authorization: Bearer {{token}}
+
+### Create Order
+POST {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "merchantId": "00000000-0000-0000-0000-000000000001",
+  "quantity": 20,
+  "shippingAddress": "123 Cycling Lane, Melbourne VIC 3000, Australia"
+}
+
+### Update Order Status to Packed
+PUT {{baseUrl}}/orders/FO001/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "packed"
+}
+
+### Update Order Status to Shipped
+PUT {{baseUrl}}/orders/FO001/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "shipped"
+}
+
+### Update Order Status to Delivered (updates inventory)
+PUT {{baseUrl}}/orders/FO001/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "delivered"
+}
+
+###
+### Videos
+###
+
+### Get All Videos
+GET {{baseUrl}}/videos
+Authorization: Bearer {{token}}
+
+### Get Videos with Search
+GET {{baseUrl}}/videos?search=MAAP
+Authorization: Bearer {{token}}
+
+### Get Video by ID
+GET {{baseUrl}}/videos/00000000-0000-0000-0000-000000000101
+Authorization: Bearer {{token}}
+
+### Upload Video (use form-data in Postman)
+POST {{baseUrl}}/videos
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="merchantName"
+
+Test Merchant
+------WebKitFormBoundary
+Content-Disposition: form-data; name="isLooping"
+
+true
+------WebKitFormBoundary
+Content-Disposition: form-data; name="video"; filename="test.mp4"
+Content-Type: video/mp4
+
+< ./test-video.mp4
+------WebKitFormBoundary--
+
+### Update Video Info
+PUT {{baseUrl}}/videos/00000000-0000-0000-0000-000000000101
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "merchantName": "MAAP Updated",
+  "isLooping": false
+}
+
+### Delete Video
+DELETE {{baseUrl}}/videos/00000000-0000-0000-0000-000000000101
+Authorization: Bearer {{token}}
+
+###
+### Statistics
+###
+
+### Get Dashboard Stats
+GET {{baseUrl}}/stats/dashboard
+Authorization: Bearer {{token}}
+
+###
+### Error Testing
+###
+
+### Invalid Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "wrong@email.com",
+  "password": "wrongpass"
+}
+
+### Missing Token
+GET {{baseUrl}}/merchants
+
+### Invalid Token
+GET {{baseUrl}}/merchants
+Authorization: Bearer invalid-token-here
+
+### Validation Error - Missing Fields
+POST {{baseUrl}}/merchants
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+### Not Found
+GET {{baseUrl}}/merchants/99999999-9999-9999-9999-999999999999
+Authorization: Bearer {{token}}

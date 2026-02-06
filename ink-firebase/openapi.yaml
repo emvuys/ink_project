@@ -248,9 +248,9 @@ components:
           items:
             type: string
             format: uri
-          minItems: 4
+          minItems: 1
           maxItems: 4
-          description: Array of exactly 4 photo URLs
+          description: Array of 1-4 photo URLs
           example:
             - "https://example.com/photo1.jpg"
             - "https://example.com/photo2.jpg"
@@ -260,9 +260,9 @@ components:
           type: array
           items:
             type: string
-          minItems: 4
+          minItems: 1
           maxItems: 4
-          description: Array of exactly 4 SHA-256 hashes (one per photo)
+          description: Array of 1-4 SHA-256 hashes (one per photo, must match number of photo_urls)
           example:
             - "hash1234567890abcdef"
             - "hash2234567890abcdef"
@@ -452,7 +452,7 @@ components:
                 error: "Missing required fields"
             invalidPhotos:
               value:
-                error: "Exactly 4 photos required"
+                error: "Must upload 1-4 photos"
             duplicateToken:
               value:
                 error: "NFC token already enrolled"

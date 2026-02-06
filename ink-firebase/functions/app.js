@@ -8,13 +8,24 @@ const enrollRoute = require('./routes/enroll');
 const verifyRoute = require('./routes/verify');
 const retrieveRoute = require('./routes/retrieve');
 const jwksRoute = require('./routes/jwks');
+const merchantByTokenRoute = require('./routes/merchantByToken');
+const merchantByProofRoute = require('./routes/merchantByProof');
+const merchantAnimationRoute = require('./routes/merchantAnimation');
+const adminRoute = require('./routes/admin');
 
 const app = express();
 
 // Middlewares
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
+// Skip JSON body parser for multipart (file upload) so multer gets the raw stream
+app.use((req, res, next) => {
+  const contentType = (req.headers['content-type'] || '').toLowerCase();
+  if (contentType.includes('multipart/form-data')) {
+    return next();
+  }
+  express.json()(req, res, next);
+});
 
 // Request logging middleware (development only)
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
@@ -56,10 +67,13 @@ if (isDevelopment) {
   });
 }
 
-// Rate limiting - 100 requests per hour per IP
+// Rate limiting - 300 requests per hour per IP (NFC tap flow uses ~4 requests)
 const limiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 100
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please try again in a few minutes.' }
 });
 app.use(limiter);
 
@@ -68,6 +82,10 @@ app.use('/enroll', enrollRoute);
 app.use('/verify', verifyRoute);
 app.use('/retrieve', retrieveRoute);
 app.use('/.well-known', jwksRoute);
+app.use('/merchant-by-token', merchantByTokenRoute);
+app.use('/merchant-by-proof', merchantByProofRoute);
+app.use('/merchant-animation', merchantAnimationRoute);
+app.use('/admin', adminRoute);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

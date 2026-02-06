@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
+}
+
+model Merchant {
+  id                 String             @id @default(uuid())
+  name               String
+  email              String
+  phone              String?
+  address            String?
+  currentInventory   Int                @default(0) @map("current_inventory")
+  alertThreshold     Int                @default(5) @map("alert_threshold")
+  totalStickersUsed  Int                @default(0) @map("total_stickers_used")
+  lastRefillDate     DateTime?          @map("last_refill_date") @db.Date
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  
+  usageRecords       UsageRecord[]
+  fulfillmentOrders  FulfillmentOrder[]
+
+  @@index([name])
+  @@index([currentInventory])
+  @@map("merchants")
+}
+
+model UsageRecord {
+  id           String   @id @default(uuid())
+  merchantId   String   @map("merchant_id")
+  date         DateTime @db.Date
+  stickersUsed Int      @map("stickers_used")
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  merchant     Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, date])
+  @@index([merchantId, date(sort: Desc)])
+  @@map("usage_records")
+}
+
+model FulfillmentOrder {
+  id              String    @id
+  merchantId      String    @map("merchant_id")
+  orderDate       DateTime  @map("order_date") @db.Date
+  quantity        Int
+  shippingAddress String    @map("shipping_address")
+  status          String
+  packedAt        DateTime? @map("packed_at")
+  shippedAt       DateTime? @map("shipped_at")
+  deliveredAt     DateTime? @map("delivered_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  merchant        Merchant  @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([orderDate(sort: Desc)])
+  @@map("fulfillment_orders")
+}
+
+model MerchantVideo {
+  id           String   @id @default(uuid())
+  merchantName String   @map("merchant_name")
+  videoUrl     String   @map("video_url")
+  thumbnailUrl String?  @map("thumbnail_url")
+  fileSize     Int?     @map("file_size")
+  format       String?
+  isLooping    Boolean  @default(true) @map("is_looping")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([merchantName])
+  @@map("merchant_videos")
+}

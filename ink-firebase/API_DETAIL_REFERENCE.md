@@ -106,8 +106,8 @@ console.log(isValid); // true为验证通过
 | order_id             | string   | 是   | 订单ID                      | "ORDER-12345"                |
 | nfc_uid              | string   | 是   | NFC标签硬件ID               | "04:1A:2B:3C:4D:5E:6F"       |
 | nfc_token            | string   | 是   | NFC标签唯一token            | "token_abcd1234"              |
-| photo_urls           | string[] | 是   | 4张包裹照片URL              | ["url1",..."url4"]           |
-| photo_hashes         | string[] | 是   | 4张包裹照片的SHA-256哈希值  | ["hash1",..."hash4"]          |
+| photo_urls           | string[] | 是   | 1-4张包裹照片URL            | ["url1",..."url4"]           |
+| photo_hashes         | string[] | 是   | 1-4张包裹照片的SHA-256哈希值（数量需与photo_urls匹配） | ["hash1",..."hash4"]          |
 | shipping_address_gps | object   | 是   | 配送GPS坐标                 | {lat: 40.71, lng:-74.00}      |
 | customer_phone_last4 | string   | 否   | 客户手机号后4位              | "1234"                        |
 | warehouse_gps        | object   | 否   | 仓库GPS坐标                 | {lat: 40.75, lng:-73.98}      |

@@ -105,8 +105,8 @@ Register a new package at shipment time. This endpoint generates a proof record 
 | `order_id` | string | Yes | Shopify order ID |
 | `nfc_uid` | string | Yes | NFC tag UID (e.g., "04:1A:2B:3C:4D:5E:6F") |
 | `nfc_token` | string | Yes | Unique NFC token |
-| `photo_urls` | array | Yes | Array of exactly 4 photo URLs |
-| `photo_hashes` | array | Yes | Array of exactly 4 SHA-256 hashes (one per photo) |
+| `photo_urls` | array | Yes | Array of 1-4 photo URLs |
+| `photo_hashes` | array | Yes | Array of 1-4 SHA-256 hashes (one per photo, must match number of photo_urls) |
 | `shipping_address_gps` | object | Yes | GPS coordinates of shipping address (`lat`, `lng`) |
 | `customer_phone_last4` | string | No | Last 4 digits of customer phone number |
 | `warehouse_gps` | object | No | GPS coordinates of warehouse (`lat`, `lng`) |
@@ -132,7 +132,14 @@ Register a new package at shipment time. This endpoint generates a proof record 
 - **400 Bad Request**: Invalid number of photos
   ```json
   {
-    "error": "Exactly 4 photos required"
+    "error": "Must upload 1-4 photos"
+  }
+  ```
+
+- **400 Bad Request**: Mismatched photo arrays
+  ```json
+  {
+    "error": "Number of photo_hashes must match number of photo_urls"
   }
   ```
 

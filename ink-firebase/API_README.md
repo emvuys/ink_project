@@ -104,7 +104,7 @@ Use the provided test files:
 
 ### 📸 Photo Verification
 - SHA-256 hashing for photo integrity
-- 4 photos required per package
+- 1-4 photos required per package
 - Tamper-proof verification
 
 ---

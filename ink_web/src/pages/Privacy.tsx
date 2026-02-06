@@ -17,7 +17,7 @@ const Privacy = () => {
             <span className="text-sm">Back</span>
           </button>
           
-          <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a2e] tracking-tight mb-8 text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a2e] tracking-tight mb-8 text-center" style={{ fontFamily: "'DM Serif Display', serif" }}>
             Privacy Policy
           </h1>
           
@@ -25,24 +25,16 @@ const Privacy = () => {
             <section>
               <h2 className="text-lg font-serif text-foreground mb-2">Data Collection</h2>
               <p className="text-xs leading-relaxed">
-                We collect only the information necessary to verify delivery authenticity. 
-                This includes GPS coordinates, device information, and verification timestamps.
+                We collect only the information necessary to provide premium shipping services. 
+                This includes delivery confirmations and timestamps.
               </p>
             </section>
             
             <section>
               <h2 className="text-lg font-serif text-foreground mb-2">Data Usage</h2>
               <p className="text-xs leading-relaxed">
-                Your verification data is used solely to confirm delivery authenticity 
-                and is never shared with third parties without your consent.
-              </p>
-            </section>
-            
-            <section>
-              <h2 className="text-lg font-serif text-foreground mb-2">Location Data</h2>
-              <p className="text-xs leading-relaxed">
-                Location data is used to verify that deliveries occur at the correct address.
-                This data is encrypted and stored securely.
+                Your delivery data is used solely to confirm successful deliveries 
+                and provide premium service features. It is never shared with third parties.
               </p>
             </section>
             
@@ -57,18 +49,15 @@ const Privacy = () => {
             <section>
               <h2 className="text-lg font-serif text-foreground mb-2">Contact</h2>
               <p className="text-xs leading-relaxed">
-                For privacy inquiries, please contact us at{" "}
-                <a href="mailto:info@in.ink" className="underline hover:text-foreground">
-                  info@in.ink
-                </a>
+                For privacy inquiries, please contact our support team.
               </p>
             </section>
           </div>
         </div>
       </main>
+      
     </div>
   );
 };
 
 export default Privacy;
-

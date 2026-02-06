@@ -1,24 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Sphere } from "@/components/Sphere";
-import { verifyDelivery, ApiError } from "@/lib/api";
+import { verifyDelivery, ApiError, getMerchantByToken, getMerchantAnimation } from "@/lib/api";
 
 const PhoneVerificationHandler = () => {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [animationUrl, setAnimationUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
 
+  useEffect(() => {
+    if (!token) return;
+    const load = async () => {
+      try {
+        const { merchant } = await getMerchantByToken(token);
+        const name = (merchant && merchant.trim()) || "default";
+        const res = await getMerchantAnimation(name);
+        if (res?.animation_url) setAnimationUrl(res.animation_url);
+      } catch (_) {
+        try {
+          const r = await getMerchantAnimation("default");
+          if (r?.animation_url) setAnimationUrl(r.animation_url);
+        } catch (_2) {}
+      }
+    };
+    load();
+  }, [token]);
+
   const handleComplete = async (digits: string) => {
     if (digits.length !== 4) return;
-    
+
     setIsLoading(true);
     setError("");
 
     try {
-      // Get coordinates from URL params
       const lat = searchParams.get('lat');
       const lng = searchParams.get('lng');
       const deviceInfo = searchParams.get('device');
@@ -40,14 +58,19 @@ const PhoneVerificationHandler = () => {
         delivery_type: 'authenticate'
       });
 
-      // Navigate to authenticated page after successful verification
       if (response.proof_id) {
-        navigate(`/auth/authenticated?proofId=${response.proof_id}`);
+        navigate(`/delivery-record/${response.proof_id}`);
       } else if (response.verify_url) {
         const match = response.verify_url.match(/\/verify\/([^\/]+)$/);
         if (match) {
-          navigate(`/auth/authenticated?proofId=${match[1]}`);
+          navigate(`/delivery-record/${match[1]}`);
+        } else {
+          setError('Invalid response from server');
+          setIsLoading(false);
         }
+      } else {
+        setError('Invalid response from server');
+        setIsLoading(false);
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -56,9 +79,32 @@ const PhoneVerificationHandler = () => {
         setError('Network error. Please try again.');
       }
       setIsLoading(false);
-      setValue(""); // Clear input on error
+      setValue("");
     }
   };
+
+  if (isLoading) {
+    if (animationUrl) {
+      const isVideo = /\.(mp4|webm|mov)$/i.test(animationUrl);
+      return (
+        <div className="h-[100dvh] bg-black flex items-center justify-center">
+          {isVideo ? (
+            <video
+              src={animationUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <img src={animationUrl} alt="" className="w-full h-full object-contain" />
+          )}
+        </div>
+      );
+    }
+    return <div className="h-[100dvh] bg-black" />;
+  }
 
   return (
     <div className="h-[100dvh] flex flex-col items-center justify-center bg-background px-6 overflow-hidden relative">
@@ -159,15 +205,6 @@ const PhoneVerificationHandler = () => {
               }}
             >
               {error}
-            </p>
-          </div>
-        )}
-
-        {/* Loading indicator */}
-        {isLoading && (
-          <div className="mb-4">
-            <p className="text-xs" style={{ fontFamily: 'Inter, sans-serif', color: 'hsl(220 15% 35%)' }}>
-              Verifying...
             </p>
           </div>
         )}

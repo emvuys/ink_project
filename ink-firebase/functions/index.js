@@ -8,10 +8,13 @@ if (!admin.apps.length) {
   // For emulator, we can use default initialization
   // For production, Firebase Functions automatically initializes with service account
   try {
-    admin.initializeApp();
+    admin.initializeApp({
+      storageBucket: process.env.STORAGE_BUCKET || 'inink-c76d3.firebasestorage.app'
+    });
   } catch (error) {
-    // Already initialized, ignore
-    console.log('Firebase Admin already initialized');
+    if (error.code !== 'app/duplicate-app') {
+      console.log('Firebase Admin init:', error.message);
+    }
   }
 }
 

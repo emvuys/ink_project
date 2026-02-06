@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MapPin, Download, FileText, X } from "lucide-react";
-import { retrieveProof } from "@/lib/api";
+import { retrieveProof, getMerchantByProofId, getMerchantAnimation } from "@/lib/api";
 import { reverseGeocode } from "@/lib/geocoding";
 import type { ProofRecord } from "@/lib/types";
 import html2canvas from "html2canvas";
@@ -12,7 +12,8 @@ const Record = () => {
   const [proof, setProof] = useState<ProofRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [address, setAddress] = useState<string>('Loading address...');
+  const [deliveryAddress, setDeliveryAddress] = useState<string>('Loading address...');
+  const [animationUrl, setAnimationUrl] = useState<string | null>(null);
   const [showTechnical, setShowTechnical] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
@@ -24,7 +25,20 @@ const Record = () => {
       setLoading(false);
       return;
     }
-
+    const loadAnimation = async () => {
+      try {
+        const { merchant } = await getMerchantByProofId(proofId);
+        const name = (merchant && merchant.trim()) || 'default';
+        const res = await getMerchantAnimation(name);
+        if (res?.animation_url) setAnimationUrl(res.animation_url);
+      } catch (_) {
+        try {
+          const r = await getMerchantAnimation('default');
+          if (r?.animation_url) setAnimationUrl(r.animation_url);
+        } catch (_2) {}
+      }
+    };
+    loadAnimation();
     loadProof();
   }, [proofId]);
 
@@ -33,12 +47,17 @@ const Record = () => {
       const data = await retrieveProof(proofId!);
       setProof(data);
       
-      const geocodeResult = await reverseGeocode(data.enrollment.shipping_address_gps);
-      if (geocodeResult.success && geocodeResult.address) {
-        setAddress(geocodeResult.address);
+      // Get address for delivery GPS (TAP location)
+      if (data.delivery?.delivery_gps) {
+        const geocodeResult = await reverseGeocode(data.delivery.delivery_gps);
+        if (geocodeResult.success && geocodeResult.address) {
+          setDeliveryAddress(geocodeResult.address);
+        } else {
+          const { lat, lng } = data.delivery.delivery_gps;
+          setDeliveryAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        }
       } else {
-        const { lat, lng } = data.enrollment.shipping_address_gps;
-        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        setDeliveryAddress('Delivery location not available');
       }
     } catch (err) {
       setError('Proof not found');
@@ -136,20 +155,22 @@ const Record = () => {
 
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const gps = proof.enrollment.shipping_address_gps;
-      pdf.text(`Coordinates: ${gps.lat.toFixed(6)}, ${gps.lng.toFixed(6)}`, margin, yPosition);
+      const shippingGps = proof.enrollment.shipping_address_gps;
+      pdf.text(`Shipping Address GPS: ${shippingGps.lat.toFixed(6)}, ${shippingGps.lng.toFixed(6)}`, margin, yPosition);
       yPosition += 6;
 
+      // Use delivery GPS (TAP location) for map if available
+      const mapGps = proof.delivery?.delivery_gps || shippingGps;
       if (proof.delivery) {
         const deliveryGps = proof.delivery.delivery_gps;
-        pdf.text(`Delivery GPS: ${deliveryGps.lat.toFixed(6)}, ${deliveryGps.lng.toFixed(6)}`, margin, yPosition);
+        pdf.text(`Delivery GPS (TAP): ${deliveryGps.lat.toFixed(6)}, ${deliveryGps.lng.toFixed(6)}`, margin, yPosition);
         yPosition += 12;
       } else {
         yPosition += 6;
       }
 
-      // Map image
-      const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${gps.lng - 0.005},${gps.lat - 0.005},${gps.lng + 0.005},${gps.lat + 0.005}&layer=mapnik&marker=${gps.lat},${gps.lng}`;
+      // Map link - use delivery GPS (TAP location)
+      const mapUrl = `https://www.google.com/maps?q=${mapGps.lat},${mapGps.lng}`;
       pdf.setTextColor(100, 100, 100);
       pdf.setFontSize(8);
       pdf.text(`Map: ${mapUrl}`, margin, yPosition);
@@ -257,14 +278,19 @@ const Record = () => {
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="font-serif text-xl" style={{ fontFamily: "'DM Serif Display', serif" }}>Loading your delivery record...</p>
+    if (animationUrl) {
+      const isVideo = /\.(mp4|webm|mov)$/i.test(animationUrl);
+      return (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          {isVideo ? (
+            <video src={animationUrl} autoPlay loop muted playsInline className="w-full h-full object-contain" />
+          ) : (
+            <img src={animationUrl} alt="" className="w-full h-full object-contain" />
+          )}
         </div>
-      </div>
-    );
+      );
+    }
+    return <div className="min-h-screen bg-black" />;
   }
 
   if (error || !proof) {
@@ -323,42 +349,39 @@ const Record = () => {
         </div>
       </div>
 
-      {/* Map Section */}
-      <div className="bg-[#FAF9F6] py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-4xl mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>Delivery Location</h2>
-            <p className="text-gray-600">GPS-verified delivery confirmation</p>
+      {/* Map Section - Show delivery GPS (TAP location) if available */}
+      {proof.delivery && proof.delivery.delivery_gps && (
+        <div className="bg-[#FAF9F6] py-16 px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="font-serif text-4xl mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>Confirmed Location Tap</h2>
+              <p className="text-gray-600">GPS-verified delivery confirmation</p>
+            </div>
+            
+            <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden relative border border-gray-300">
+              <iframe
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                scrolling="no"
+                marginHeight={0}
+                marginWidth={0}
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${proof.delivery.delivery_gps.lat},${proof.delivery.delivery_gps.lng}&zoom=15`}
+                className="border-0 w-full h-full"
+                title="Confirmed Location Tap Map"
+                allowFullScreen
+              />
+            </div>
+            
+            <p className="text-center mt-4 text-sm text-gray-600">
+              {deliveryAddress}
+            </p>
+            <p className="text-center mt-1 text-xs text-gray-400 font-mono">
+              {proof.delivery.delivery_gps.lat.toFixed(6)}, {proof.delivery.delivery_gps.lng.toFixed(6)}
+            </p>
           </div>
-          
-          <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden relative border border-gray-300">
-            <iframe
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              scrolling="no"
-              marginHeight={0}
-              marginWidth={0}
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${proof.enrollment.shipping_address_gps.lng - 0.005},${proof.enrollment.shipping_address_gps.lat - 0.005},${proof.enrollment.shipping_address_gps.lng + 0.005},${proof.enrollment.shipping_address_gps.lat + 0.005}&layer=mapnik&marker=${proof.enrollment.shipping_address_gps.lat},${proof.enrollment.shipping_address_gps.lng}`}
-              className="border-0 w-full h-full"
-              title="Delivery Location Map"
-              lang="en"
-            />
-            <style>{`
-              iframe[title="Delivery Location Map"] {
-                filter: grayscale(0);
-              }
-            `}</style>
-          </div>
-          
-          <p className="text-center mt-6 font-serif text-xl text-gray-600" style={{ fontFamily: "'DM Serif Display', serif" }}>
-            {address}
-          </p>
-          <p className="text-center mt-2 text-sm text-gray-500 font-mono">
-            {proof.enrollment.shipping_address_gps.lat.toFixed(6)}, {proof.enrollment.shipping_address_gps.lng.toFixed(6)}
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Photos Section */}
       <div className="bg-white py-16 px-6">

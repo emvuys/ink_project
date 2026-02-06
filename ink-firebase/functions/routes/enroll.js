@@ -20,13 +20,17 @@ router.post('/', async (req, res) => {
       merchant
     } = req.body;
 
-    // Basic validation
-    if (!order_id || !nfc_uid || !nfc_token || !photo_urls || !photo_hashes || !customer_phone_last4) {
+    // Basic validation (merchant is required)
+    if (!order_id || !nfc_uid || !nfc_token || !photo_urls || !photo_hashes || !customer_phone_last4 || !merchant) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (!Array.isArray(photo_urls) || photo_urls.length !== 4 ) {
-      return res.status(400).json({ error: 'Exactly 4 photos required' });
+    if (!Array.isArray(photo_urls) || photo_urls.length < 1 || photo_urls.length > 4) {
+      return res.status(400).json({ error: 'Must upload 1-4 photos' });
+    }
+
+    if (!Array.isArray(photo_hashes) || photo_hashes.length !== photo_urls.length) {
+      return res.status(400).json({ error: 'Number of photo_hashes must match number of photo_urls' });
     }
 
     if (customer_phone_last4.length !== 4 ) {
@@ -80,7 +84,7 @@ router.post('/', async (req, res) => {
       order_id: order_id,
       nfc_uid: nfc_uid,
       nfc_token: nfc_token,
-      merchant: merchant || '',
+      merchant: merchant,
       enrollment_timestamp: FieldValue.serverTimestamp(),
       shipping_address_gps: shipping_address_gps,
       warehouse_gps: warehouse_gps,
